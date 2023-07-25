@@ -91,28 +91,38 @@ fn main() {
     let mut cj_zj = ci;
     let mut basis: [usize; 3] = [3, 4, 5];
     loop {
-        if PROBLEM == ProblemKind::Maximization {
-            let mut solved = true;
-            for value in ci_zj.iter() {
-                if *value >= Rational::from_integer(0) {
-                    solved = false;
-                    break;
-                }
         println!("\nMatrix: {matrix:?}");
         println!("Solution: {solution:?}");
         println!("Basis: {basis:?}");
         println!("Zj: {zj:?}");
         println!("CJZJ: {cj_zj:?}");
+        let mut solved = true;
+        for value in cj_zj.iter() {
+            if *value > Rational::from_integer(0) && PROBLEM == ProblemKind::Maximization {
+                solved = false;
+                break;
             }
-            if solved {
+            if *value < Rational::from_integer(0) && PROBLEM == ProblemKind::Minimization {
+                solved = false;
                 break;
             }
         }
-        let (entering_index, entering_value) = ci_zj
-            .iter()
-            .enumerate()
-            .max_by_key(|(_, num)| num.clone())
-            .unwrap();
+        if solved {
+            break;
+        }
+        let (entering_index, entering_value) = if PROBLEM == ProblemKind::Maximization {
+            cj_zj
+                .iter()
+                .enumerate()
+                .max_by_key(|(_, num)| num.clone())
+                .unwrap()
+        } else {
+            cj_zj
+                .iter()
+                .enumerate()
+                .min_by_key(|(_, num)| num.clone())
+                .unwrap()
+        };
         println!("Entering index: {entering_index} Entering value: {entering_value:?}");
         for (i, sol) in solution.iter().enumerate() {
             ratio[i] = (*sol / matrix[i][entering_index]).unwrap_or(INF);
