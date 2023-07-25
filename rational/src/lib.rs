@@ -1,10 +1,12 @@
 const EPSILON: f32 = 1e-4;
 
+type Int = i64;
 
 #[derive(Clone, Copy, Eq)]
 pub struct Rational {
-    p: i32,
-    q: i32,
+    p: Int,
+    q: Int,
+}
 
 use std::fmt::Debug;
 impl Debug for Rational {
@@ -20,18 +22,18 @@ impl Debug for Rational {
 }
 
 impl Rational {
-    pub fn new(p: i32, q: i32) -> Self {
+    pub const fn new(p: Int, q: Int) -> Self {
         assert!(q != 0, "Denominator can not be 0");
         Rational { p, q }
     }
     pub fn value(&self) -> f32 {
         self.p as f32 * (self.q as f32).recip()
     }
-    pub fn from_integer(value: i32) {
-        Rational { p: value, q: 1 };
+    pub fn from_integer(value: Int) -> Rational {
+        Rational { p: value, q: 1 }
     }
     pub fn simplify(&mut self) {
-        (2..=((self.p.abs().min(self.q.abs()) as f32) as i32))
+        (2..=((self.p.abs().min(self.q.abs()) as f32) as Int))
             .rev()
             .for_each(|i| {
                 if self.p % i == 0 && self.q % i == 0 {
