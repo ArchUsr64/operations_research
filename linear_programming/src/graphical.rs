@@ -36,10 +36,7 @@ fn main() {
         Rational::from_integer(430),
     ];
     let mut solution = [constraint_1[3], constraint_2[3], constraint_3[3]];
-    let mut slack_1 = constraint_1[3];
-    let mut slack_2 = constraint_2[3];
-    let mut slack_3 = constraint_3[3];
-    let mut ci = [
+    let ci = [
         objective[0],
         objective[1],
         objective[2],
@@ -52,7 +49,6 @@ fn main() {
         Rational::from_integer(0),
         Rational::from_integer(0),
     ];
-    let mut basis = [3, 4, 5];
     let mut matrix = [
         [
             constraint_1[0],
@@ -92,15 +88,9 @@ fn main() {
         Rational::from_integer(0),
         Rational::from_integer(0),
     ];
-    let mut ci_zj = ci;
+    let mut cj_zj = ci;
     let mut basis: [usize; 3] = [3, 4, 5];
-    let mut runs = 0;
     loop {
-        println!("{matrix:?}");
-        if runs == 2 {
-            break;
-        }
-        runs += 1;
         if PROBLEM == ProblemKind::Maximization {
             let mut solved = true;
             for value in ci_zj.iter() {
@@ -108,6 +98,11 @@ fn main() {
                     solved = false;
                     break;
                 }
+        println!("\nMatrix: {matrix:?}");
+        println!("Solution: {solution:?}");
+        println!("Basis: {basis:?}");
+        println!("Zj: {zj:?}");
+        println!("CJZJ: {cj_zj:?}");
             }
             if solved {
                 break;
@@ -118,17 +113,18 @@ fn main() {
             .enumerate()
             .max_by_key(|(_, num)| num.clone())
             .unwrap();
+        println!("Entering index: {entering_index} Entering value: {entering_value:?}");
         for (i, sol) in solution.iter().enumerate() {
             ratio[i] = (*sol / matrix[i][entering_index]).unwrap_or(INF);
         }
-        println!("Ratio: {ratio:?}");
-        let (leaving_index, leaving_value) = ratio
+        let (leaving_index, _) = ratio
             .iter()
             .enumerate()
-            .filter(|(i, num)| **num > Rational::from_integer(0))
+            .filter(|(_, num)| **num > Rational::from_integer(0))
             .min_by_key(|(_, num)| num.clone())
             .unwrap();
         let pivot_element = matrix[leaving_index][entering_index];
+        println!("Pivot: {pivot_element:?}");
         basis[leaving_index] = entering_index;
         cb[leaving_index] = *entering_value;
         // Fill the new pivot row
@@ -136,9 +132,6 @@ fn main() {
             .iter_mut()
             .for_each(|i| *i = (*i / pivot_element).unwrap_or(INF));
         solution[leaving_index] = (solution[leaving_index] / pivot_element).unwrap_or(INF);
-        println!("Leaving: ({leaving_index} {leaving_value:?})");
-        println!("entering: ({entering_index} {entering_value:?})");
-        println!("Pivot value: {pivot_element:?}");
         let mut set_non_pivot_row = |row_index: usize| {
             let corresponding_pivot_element = matrix[row_index][entering_index];
             for i in 0..6 {
@@ -154,7 +147,6 @@ fn main() {
             }
         });
         // Setting Zj
-        println!("Zj: {zj:#?}");
         (0..6).for_each(|i| {
             zj[i] = (0..3)
                 .map(|j| matrix[j][i] * cb[j])
@@ -162,8 +154,7 @@ fn main() {
                 .unwrap();
         });
         for i in 0..6 {
-            ci_zj[i] = ci[i] - zj[i];
+            cj_zj[i] = ci[i] - zj[i];
         }
-        println!("{ci_zj:#?}");
     }
 }
