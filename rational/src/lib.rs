@@ -1,8 +1,10 @@
+const EPSILON: f32 = 1e-4;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug)]
 pub struct Rational {
     p: i32,
     q: i32,
@@ -55,6 +57,28 @@ impl Mul for Rational {
     }
 }
 
+use std::cmp::{Ordering, PartialEq, PartialOrd};
+impl PartialEq for Rational {
+    fn eq(&self, other: &Self) -> bool {
+        (self.value() - other.value()).abs() < EPSILON
+    }
+    fn ne(&self, other: &Self) -> bool {
+        (self.value() - other.value()).abs() > EPSILON
+    }
+}
+
+impl PartialOrd for Rational {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(if self == other {
+            Ordering::Equal
+        } else if self.value() > other.value() {
+            Ordering::Greater
+        } else {
+            Ordering::Less
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,5 +89,25 @@ mod tests {
         assert_eq!(q.value(), 0.5f32);
         q.simplify();
         assert_eq!(q, Rational::new(1, 2));
+    }
+
+    #[test]
+    fn operations() {
+        let q1 = Rational::new(1, 6);
+        let q2 = Rational::new(1, 2);
+        assert_eq!(q1 + q2, Rational::new(2, 3));
+        assert_eq!(q1 - q2, Rational::new(-1, 3));
+        assert_eq!(q1 * q2, Rational::new(1, 12));
+    }
+
+    #[test]
+    fn comparisons() {
+        let q1 = Rational::new(1, 6);
+        let q2 = Rational::new(1, 2);
+        assert!(q2 > q1);
+        assert!(q1 < q2);
+        let q1 = Rational::new(1, 6);
+        let q2 = Rational::new(9, 54);
+        assert!(q2 == q1);
     }
 }
