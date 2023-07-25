@@ -33,7 +33,7 @@ impl Rational {
     }
 }
 
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 impl Add for Rational {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
@@ -61,13 +61,31 @@ impl Mul for Rational {
     }
 }
 
-use std::cmp::{Ordering, PartialEq, PartialOrd};
+impl Div for Rational {
+    type Output = Option<Self>;
+    fn div(self, rhs: Self) -> Self::Output {
+        if rhs.value().abs() < EPSILON {
+            return None;
+        }
+        let mut result = Rational::new(self.p * rhs.q, self.q * rhs.p);
+        result.simplify();
+        Some(result)
+    }
+}
+
+use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 impl PartialEq for Rational {
     fn eq(&self, other: &Self) -> bool {
         (self.value() - other.value()).abs() < EPSILON
     }
     fn ne(&self, other: &Self) -> bool {
         (self.value() - other.value()).abs() > EPSILON
+    }
+}
+
+impl Ord for Rational {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 
