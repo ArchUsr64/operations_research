@@ -5,3 +5,10 @@ version = 3
 [[package]]
 name = "linear_programming"
 version = "0.1.0"
+dependencies = [
+ "rational",
+]
+
+[[package]]
+name = "rational"
+version = "0.1.0"
