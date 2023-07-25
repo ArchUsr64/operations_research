@@ -8,5 +8,5 @@ edition = "2021"
 rational = {path = "../rational"}
 
 [[bin]]
-name = "graphical"
-path = "src/graphical.rs"
+name = "simplex"
+path = "src/simplex.rs"
