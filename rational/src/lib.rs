@@ -12,10 +12,14 @@ pub struct Rational {
 
 impl Rational {
     pub fn new(p: i32, q: i32) -> Self {
+        assert!(q != 0, "Denominator can not be 0");
         Rational { p, q }
     }
     pub fn value(&self) -> f32 {
         self.p as f32 * (self.q as f32).recip()
+    }
+    pub fn from_integer(value: i32) {
+        Rational { p: value, q: 1 };
     }
     pub fn simplify(&mut self) {
         (2..=((self.p.abs().min(self.q.abs()) as f32) as i32))
