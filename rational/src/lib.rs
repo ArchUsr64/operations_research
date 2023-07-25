@@ -27,6 +27,34 @@ impl Rational {
     }
 }
 
+use std::ops::{Add, Mul, Sub};
+impl Add for Rational {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut result = Rational::new(self.p * rhs.q + self.q * rhs.p, self.q * rhs.q);
+        result.simplify();
+        result
+    }
+}
+
+impl Sub for Rational {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
+        let mut result = Rational::new(self.p * rhs.q - self.q * rhs.p, self.q * rhs.q);
+        result.simplify();
+        result
+    }
+}
+
+impl Mul for Rational {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        let mut result = Rational::new(self.p * rhs.p, self.q * rhs.q);
+        result.simplify();
+        result
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
