@@ -1,13 +1,22 @@
 const EPSILON: f32 = 1e-4;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Eq)]
 pub struct Rational {
     p: i32,
     q: i32,
+
+use std::fmt::Debug;
+impl Debug for Rational {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.q == 1 {
+            write!(f, "{}", self.p)
+        } else if self.p != 0 {
+            write!(f, "{}/{}", self.p, self.q)
+        } else {
+            write!(f, "0")
+        }
+    }
 }
 
 impl Rational {
