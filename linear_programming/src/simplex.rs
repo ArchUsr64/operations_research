@@ -99,12 +99,15 @@ fn main() {
     };
     loop {
         println!("\nMatrix: {matrix:?}");
-        println!("Solution: {solution:?}");
         println!(
-            "Basis: {:#?}",
+            "Cb, Basis, Solution: {:#?}",
             basis
                 .iter()
-                .map(|index| index_to_var(*index))
+                .zip(solution.iter().zip(cb.iter()))
+                .map(|(variable_index, (solution, cb))| format!(
+                    "{cb:?} {}: {solution:?}",
+                    index_to_var(*variable_index),
+                ))
                 .collect::<Vec<_>>()
         );
         println!("Zj: {zj:?}");
