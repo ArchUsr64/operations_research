@@ -12,29 +12,27 @@ enum ProblemKind {
 const PROBLEM: ProblemKind = ProblemKind::Maximization;
 
 fn main() {
+    // For objective fn `Z = ax1 + bx2 + cx3`
     let objective = [
-        Rational::from_integer(4),
+        // a
         Rational::from_integer(3),
-        Rational::from_integer(6),
-    ];
-    let constraint_1 = [
+        // b
         Rational::from_integer(2),
-        Rational::from_integer(3),
-        Rational::from_integer(2),
-        Rational::from_integer(440),
-    ];
-    let constraint_2 = [
-        Rational::from_integer(4),
-        Rational::from_integer(0),
-        Rational::from_integer(3),
-        Rational::from_integer(470),
-    ];
-    let constraint_3 = [
-        Rational::from_integer(2),
+        // c
         Rational::from_integer(5),
-        Rational::from_integer(0),
-        Rational::from_integer(430),
     ];
+    // Constraints are created according to the format `ax1 + bx2 + cx3 <= k`
+    let constraint_from = |a, b, c, k| {
+        [
+            Rational::from_integer(a),
+            Rational::from_integer(b),
+            Rational::from_integer(c),
+            Rational::from_integer(k),
+        ]
+    };
+    let constraint_1 = constraint_from(1, 2, 1, 430);
+    let constraint_2 = constraint_from(3, 0, 2, 460);
+    let constraint_3 = constraint_from(1, 4, 0, 420);
     let mut solution = [constraint_1[3], constraint_2[3], constraint_3[3]];
     let ci = [
         objective[0],
