@@ -90,7 +90,7 @@ fn main() {
     ];
     let mut cj_zj = ci;
     let mut basis: [usize; 3] = [3, 4, 5];
-    let mut index_to_var = |index| match index {
+    let index_to_var = |index| match index {
         0 => "x1",
         1 => "x2",
         2 => "x3",
@@ -110,7 +110,7 @@ fn main() {
                 .collect::<Vec<_>>()
         );
         println!("Zj: {zj:?}");
-        println!("CJZJ: {cj_zj:?}");
+        println!("CJ-ZJ: {cj_zj:?}");
         let mut solved = true;
         for value in cj_zj.iter() {
             if *value > Rational::from_integer(0) && PROBLEM == ProblemKind::Maximization {
@@ -178,6 +178,12 @@ fn main() {
         });
         for i in 0..6 {
             cj_zj[i] = ci[i] - zj[i];
+        }
+    }
+    println!("Final solutions:");
+    for (i, variable_index) in basis.iter().enumerate() {
+        if (0..3).contains(variable_index) {
+            println!("{} = {:?}", index_to_var(*variable_index), solution[i]);
         }
     }
 }
