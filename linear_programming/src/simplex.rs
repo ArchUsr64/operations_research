@@ -90,10 +90,25 @@ fn main() {
     ];
     let mut cj_zj = ci;
     let mut basis: [usize; 3] = [3, 4, 5];
+    let mut index_to_var = |index| match index {
+        0 => "x1",
+        1 => "x2",
+        2 => "x3",
+        3 => "s1",
+        4 => "s2",
+        5 => "s3",
+        _ => "INVALID_VAR",
+    };
     loop {
         println!("\nMatrix: {matrix:?}");
         println!("Solution: {solution:?}");
-        println!("Basis: {basis:?}");
+        println!(
+            "Basis: {:#?}",
+            basis
+                .iter()
+                .map(|index| index_to_var(*index))
+                .collect::<Vec<_>>()
+        );
         println!("Zj: {zj:?}");
         println!("CJZJ: {cj_zj:?}");
         let mut solved = true;
@@ -123,7 +138,6 @@ fn main() {
                 .min_by_key(|(_, num)| num.clone())
                 .unwrap()
         };
-        println!("Entering index: {entering_index} Entering value: {entering_value:?}");
         for (i, sol) in solution.iter().enumerate() {
             ratio[i] = (*sol / matrix[i][entering_index]).unwrap_or(INF);
         }
@@ -134,7 +148,6 @@ fn main() {
             .min_by_key(|(_, num)| num.clone())
             .unwrap();
         let pivot_element = matrix[leaving_index][entering_index];
-        println!("Pivot: {pivot_element:?}");
         basis[leaving_index] = entering_index;
         cb[leaving_index] = *entering_value;
         // Fill the new pivot row
