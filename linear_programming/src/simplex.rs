@@ -142,6 +142,7 @@ fn main() {
         for (i, sol) in solution.iter().enumerate() {
             ratio[i] = (*sol / matrix[i][entering_index]).unwrap_or(INF);
         }
+        println!("Ratio: {ratio:?}");
         let (leaving_index, _) = ratio
             .iter()
             .enumerate()
