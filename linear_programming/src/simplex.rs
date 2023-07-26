@@ -205,13 +205,24 @@ fn main() {
         }
     }
     println!(
-        "{}[Final solutions]{}",
+        "\n{}[Final solutions]{}",
         color::LightGreen.bg_str(),
         color::Reset.bg_str()
     );
+    let mut z_value = Rational::from_integer(0);
     for (i, variable_index) in basis.iter().enumerate() {
         if (0..3).contains(variable_index) {
             println!("{} = {:?}", index_to_var(*variable_index), solution[i]);
+            z_value = z_value + solution[i] * objective[*variable_index];
         }
     }
+    println!(
+        "Z_{}: {:?}",
+        if PROBLEM == ProblemKind::Maximization {
+            "Max"
+        } else {
+            "Min"
+        },
+        z_value
+    );
 }
