@@ -1,5 +1,6 @@
 //! Finds solution to a linear programming problem using Simplex Method
 use rational::Rational;
+use termion::color;
 
 const INF: Rational = Rational::new(1000_000, 1);
 
@@ -97,10 +98,22 @@ fn main() {
         5 => "s3",
         _ => "INVALID_VAR",
     };
+    let mut runs = 1;
     loop {
-        println!("\nMatrix: {matrix:?}");
         println!(
-            "Cb, Basis, Solution: {:#?}",
+            "\nIternation no: {}{runs}{}",
+            color::Red.fg_str(),
+            color::Reset.fg_str()
+        );
+        runs += 1;
+        println!(
+            "{}Matrix:\t\t\t{matrix:?}{}",
+            color::Magenta.fg_str(),
+            color::Reset.fg_str()
+        );
+        println!(
+            "{}Cb, Basis, Solution:\t{:#?}{}",
+            color::Blue.fg_str(),
             basis
                 .iter()
                 .zip(solution.iter().zip(cb.iter()))
@@ -108,10 +121,11 @@ fn main() {
                     "{cb:?} {}: {solution:?}",
                     index_to_var(*variable_index),
                 ))
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
+            color::Reset.fg_str(),
         );
-        println!("Zj: {zj:?}");
-        println!("CJ-ZJ: {cj_zj:?}");
+        println!("Zj:\t\t\t{zj:?}");
+        println!("CJ-ZJ:\t\t\t{cj_zj:?}");
         let mut solved = true;
         for value in cj_zj.iter() {
             if *value > Rational::from_integer(0) && PROBLEM == ProblemKind::Maximization {
@@ -150,6 +164,14 @@ fn main() {
             .min_by_key(|(_, num)| num.clone())
             .unwrap();
         let pivot_element = matrix[leaving_index][entering_index];
+        println!(
+            "{}Leaving: {}, Entering: {}, Pivot: {:?}{}",
+            color::Yellow.fg_str(),
+            index_to_var(basis[leaving_index]),
+            index_to_var(entering_index),
+            pivot_element,
+            color::Reset.fg_str(),
+        );
         basis[leaving_index] = entering_index;
         cb[leaving_index] = *entering_value;
         // Fill the new pivot row
@@ -182,7 +204,11 @@ fn main() {
             cj_zj[i] = ci[i] - zj[i];
         }
     }
-    println!("Final solutions:");
+    println!(
+        "{}[Final solutions]{}",
+        color::LightGreen.bg_str(),
+        color::Reset.bg_str()
+    );
     for (i, variable_index) in basis.iter().enumerate() {
         if (0..3).contains(variable_index) {
             println!("{} = {:?}", index_to_var(*variable_index), solution[i]);
