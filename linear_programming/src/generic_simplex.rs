@@ -22,16 +22,17 @@ pub fn solve(problem: Problem<i64>) {
             _ => panic!("Simplex doesn't support non 'LessThan' type constraints"),
         })
         .map(|constraint| {
-            let mut x = constraint
-                .coefficients
-                .iter()
-                .map(|int| Rational::from_integer(*int))
-                .collect::<Vec<_>>();
-            x.push(Rational::from_integer(constraint.constant));
-            x
+            (
+                constraint
+                    .coefficients
+                    .iter()
+                    .map(|int| Rational::from_integer(*int))
+                    .collect::<Vec<_>>(),
+                Rational::from_integer(constraint.constant),
+            )
         })
         .collect();
-    let mut solution = [constraints[0][3], constraints[1][3], constraints[2][3]];
+    let mut solution = [constraints[0].1, constraints[1].1, constraints[2].1];
     let ci = [
         objective[0],
         objective[1],
@@ -47,25 +48,25 @@ pub fn solve(problem: Problem<i64>) {
     ];
     let mut matrix = [
         [
-            constraints[0][0],
-            constraints[0][1],
-            constraints[0][2],
+            constraints[0].0[0],
+            constraints[0].0[1],
+            constraints[0].0[2],
             Rational::from_integer(1),
             Rational::from_integer(0),
             Rational::from_integer(0),
         ],
         [
-            constraints[1][0],
-            constraints[1][1],
-            constraints[1][2],
+            constraints[1].0[0],
+            constraints[1].0[1],
+            constraints[1].0[2],
             Rational::from_integer(0),
             Rational::from_integer(1),
             Rational::from_integer(0),
         ],
         [
-            constraints[2][0],
-            constraints[2][1],
-            constraints[2][2],
+            constraints[2].0[0],
+            constraints[2].0[1],
+            constraints[2].0[2],
             Rational::from_integer(0),
             Rational::from_integer(0),
             Rational::from_integer(1),
