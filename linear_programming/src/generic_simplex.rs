@@ -142,13 +142,13 @@ pub fn solve(problem: Problem<i64>) {
             cj_zj
                 .iter()
                 .enumerate()
-                .max_by_key(|(_, num)| num.clone())
+                .max_by_key(|(_, num)| **num)
                 .unwrap()
         } else {
             cj_zj
                 .iter()
                 .enumerate()
-                .min_by_key(|(_, num)| num.clone())
+                .min_by_key(|(_, num)| **num)
                 .unwrap()
         };
         for (i, sol) in solution.iter().enumerate() {
@@ -159,7 +159,7 @@ pub fn solve(problem: Problem<i64>) {
             .iter()
             .enumerate()
             .filter(|(_, num)| **num > Rational::from_integer(0))
-            .min_by_key(|(_, num)| num.clone())
+            .min_by_key(|(_, num)| **num)
             .unwrap();
         let pivot_element = matrix[leaving_index][entering_index];
         println!(
