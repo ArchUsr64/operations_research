@@ -1,91 +1,43 @@
 use super::{ConstraintKind, Problem, ProblemKind};
-use rational::Rational;
 use termion::color;
-
-const INF: Rational = Rational::new(1000_000, 1);
 
 const PROBLEM: ProblemKind = ProblemKind::Maximization;
 
-pub fn solve(problem: Problem<i64>) {
+use std::{cmp, fmt, ops};
+pub fn solve<T>(problem: Problem<T>, zero_value: T, unit_value: T, inf_value: T)
+where
+    T: Clone
+        + Copy
+        + fmt::Debug
+        + ops::Add<Output = T>
+        + ops::Sub<Output = T>
+        + ops::Mul<Output = T>
+        + ops::Div<Output = Option<T>>
+        + cmp::Ord,
+{
     // For objective fn `Z = ax1 + bx2 + cx3`
-    let objective: Vec<_> = problem
-        .objective_function_coefficients()
-        .iter()
-        .map(|int| Rational::from_integer(*int))
-        .collect();
+    let objective = problem.objective_function_coefficients();
+    let descision_variable_count = objective.len();
     // Constraints are created according to the format `ax1 + bx2 + cx3 <= k`
-    let constraints: Vec<_> = problem
-        .constraints()
-        .iter()
-        .filter(|constraint| match constraint.kind() {
-            ConstraintKind::LessThan => true,
-            _ => panic!("Simplex doesn't support non 'LessThan' type constraints"),
+    let constraints = problem.constraints();
+    // let mut solution = [constraints[0].1, constraints[1].1, constraints[2].1];
+    let mut solution: Vec<_> = constraints.iter().map(|i| i.constant).collect();
+    let constraint_coefficients: Vec<_> =
+        constraints.iter().map(|i| i.coefficients.clone()).collect();
+    let mut cj = objective.to_vec();
+    (0..descision_variable_count).for_each(|_| cj.push(zero_value));
+    let mut cb = vec![zero_value; descision_variable_count];
+    let mut matrix = (0..descision_variable_count)
+        .map(|i| {
+            let mut row = constraint_coefficients[i].clone();
+            (0..descision_variable_count)
+                .for_each(|j| row.push(if i != j { zero_value } else { unit_value }));
+            row
         })
-        .map(|constraint| {
-            (
-                constraint
-                    .coefficients
-                    .iter()
-                    .map(|int| Rational::from_integer(*int))
-                    .collect::<Vec<_>>(),
-                Rational::from_integer(constraint.constant),
-            )
-        })
-        .collect();
-    let mut solution = [constraints[0].1, constraints[1].1, constraints[2].1];
-    let ci = [
-        objective[0],
-        objective[1],
-        objective[2],
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-    ];
-    let mut cb = [
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-    ];
-    let mut matrix = [
-        [
-            constraints[0].0[0],
-            constraints[0].0[1],
-            constraints[0].0[2],
-            Rational::from_integer(1),
-            Rational::from_integer(0),
-            Rational::from_integer(0),
-        ],
-        [
-            constraints[1].0[0],
-            constraints[1].0[1],
-            constraints[1].0[2],
-            Rational::from_integer(0),
-            Rational::from_integer(1),
-            Rational::from_integer(0),
-        ],
-        [
-            constraints[2].0[0],
-            constraints[2].0[1],
-            constraints[2].0[2],
-            Rational::from_integer(0),
-            Rational::from_integer(0),
-            Rational::from_integer(1),
-        ],
-    ];
-    let mut zj = [
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-    ];
-    let mut ratio = [
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-        Rational::from_integer(0),
-    ];
-    let mut cj_zj = ci;
+        .collect::<Vec<_>>();
+    let mut zj = vec![zero_value; 2 * descision_variable_count];
+    let mut ratio = vec![zero_value; descision_variable_count];
+    let mut cj_zj = cj.clone();
     let mut basis: [usize; 3] = [3, 4, 5];
     let index_to_var = |index| match index {
         0 => "x1",
@@ -126,11 +78,11 @@ pub fn solve(problem: Problem<i64>) {
         println!("CJ-ZJ:\t\t\t{cj_zj:?}");
         let mut solved = true;
         for value in cj_zj.iter() {
-            if *value > Rational::from_integer(0) && PROBLEM == ProblemKind::Maximization {
+            if *value > zero_value && PROBLEM == ProblemKind::Maximization {
                 solved = false;
                 break;
             }
-            if *value < Rational::from_integer(0) && PROBLEM == ProblemKind::Minimization {
+            if *value < zero_value && PROBLEM == ProblemKind::Minimization {
                 solved = false;
                 break;
             }
@@ -152,13 +104,13 @@ pub fn solve(problem: Problem<i64>) {
                 .unwrap()
         };
         for (i, sol) in solution.iter().enumerate() {
-            ratio[i] = (*sol / matrix[i][entering_index]).unwrap_or(INF);
+            ratio[i] = (*sol / matrix[i][entering_index]).unwrap_or(inf_value);
         }
         println!("Ratio: {ratio:?}");
         let (leaving_index, _) = ratio
             .iter()
             .enumerate()
-            .filter(|(_, num)| **num > Rational::from_integer(0))
+            .filter(|(_, num)| **num > zero_value)
             .min_by_key(|(_, num)| **num)
             .unwrap();
         let pivot_element = matrix[leaving_index][entering_index];
@@ -175,8 +127,8 @@ pub fn solve(problem: Problem<i64>) {
         // Fill the new pivot row
         matrix[leaving_index]
             .iter_mut()
-            .for_each(|i| *i = (*i / pivot_element).unwrap_or(INF));
-        solution[leaving_index] = (solution[leaving_index] / pivot_element).unwrap_or(INF);
+            .for_each(|i| *i = (*i / pivot_element).unwrap_or(inf_value));
+        solution[leaving_index] = (solution[leaving_index] / pivot_element).unwrap_or(inf_value);
         let mut set_non_pivot_row = |row_index: usize| {
             let corresponding_pivot_element = matrix[row_index][entering_index];
             for i in 0..6 {
@@ -199,7 +151,7 @@ pub fn solve(problem: Problem<i64>) {
                 .unwrap();
         });
         for i in 0..6 {
-            cj_zj[i] = ci[i] - zj[i];
+            cj_zj[i] = cj[i] - zj[i];
         }
     }
     println!(
@@ -207,7 +159,7 @@ pub fn solve(problem: Problem<i64>) {
         color::LightGreen.bg_str(),
         color::Reset.bg_str()
     );
-    let mut z_value = Rational::from_integer(0);
+    let mut z_value = zero_value;
     for (i, variable_index) in basis.iter().enumerate() {
         if (0..3).contains(variable_index) {
             println!("{} = {:?}", index_to_var(*variable_index), solution[i]);
